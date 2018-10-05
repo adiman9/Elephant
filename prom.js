@@ -1,4 +1,3 @@
-// TODO add a finally handler
 // TODO then should take 2 callbacks, one to fulfill and the other to reject
 //
 // TODO add resolve, reject, race and all static methods
@@ -46,10 +45,10 @@ class Prom {
       }
     }, 0)
   }
-  then(thenFn) {
-    if (this.isFinished && this.state === 'fulfilled') {
+  _checkImmediateSettlement(state, handlerFn) {
+    if (this.isFinished && this.state === state) {
       try {
-        const res = thenFn(this.value);
+        const res = handlerFn(this.value);
         if (res instanceof Prom) {
           return res;
         }
@@ -62,6 +61,14 @@ class Prom {
         });
       }
     }
+  }
+  then(thenFn, catchFn) {
+    const earlySettle = this._checkImmediateSettlement('fulfilled', thenFn);
+
+    if (earlySettle) {
+      return earlySettle;
+    }
+
     return new Prom((resolve, reject) => {
       if (!this.rejecterFn) {
         this.rejecterFn = (error) => {
@@ -84,21 +91,12 @@ class Prom {
     });
   }
   catch(catchFn) {
-    if (this.isFinished && this.state === 'rejected') {
-      try {
-        const res = catchFn(this.value);
-        if (res instanceof Prom) {
-          return res;
-        }
-        return new Prom((resolve, reject) => {
-          resolve(res);
-        });
-      } catch(e) {
-        return new Prom((resolve, reject) => {
-          reject(e);
-        });
-      }
+    const earlySettle = this._checkImmediateSettlement('rejected', catchFn);
+
+    if (earlySettle) {
+      return earlySettle;
     }
+
     return new Prom((resolve, reject) => {
       if (!this.resolverFn) {
         this.resolverFn = (value) => {
