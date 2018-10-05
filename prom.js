@@ -16,9 +16,7 @@ class Prom {
     try {
       fn(this._resolve.bind(this), this._reject.bind(this));
     } catch(e) {
-      return new Prom((resolve, reject) => {
-        reject(e);
-      });
+      return Prom.reject(e);
     }
   }
   static reject(err) {
@@ -62,13 +60,9 @@ class Prom {
         if (res instanceof Prom) {
           return res;
         }
-        return new Prom((resolve, reject) => {
-          resolve(res);
-        });
+        return Prom.resolve(res);
       } catch(e) {
-        return new Prom((resolve, reject) => {
-          reject(e);
-        });
+        return Prom.reject(e);
       }
     }
   }
@@ -134,13 +128,9 @@ class Prom {
     if (this.isFinished) {
       try {
         finallyFn();
-        return new Prom((resolve, reject) => {
-          resolve(this.value);
-        });
+        return Prom.resolve(this.value);
       } catch(e) {
-        return new Prom((resolve, reject) => {
-          reject(e);
-        });
+        return Prom.reject(e);
       }
     }
     return new Prom((resolve, reject) => {
