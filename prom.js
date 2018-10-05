@@ -1,8 +1,15 @@
+// TODO add a finally handler
+// TODO then should take 2 callbacks, one to fulfill and the other to reject
+//
+// TODO add resolve, reject, race and all static methods
+//
+// Refer to: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
+
 class Prom {
   constructor(fn) {
     this.fn = fn;
     this.value = null;
-    this.state = 'initialised';
+    this.state = 'pending';
     this.isFinished = false;
     this.resolverFn = null;
     this.rejecterFn = null;
@@ -17,7 +24,7 @@ class Prom {
   _resolve(val) {
     this.isFinished = true;
     this.value = val;
-    this.state = 'resolved';
+    this.state = 'fulfilled';
     if (this.resolverFn) {
       this.resolverFn(val);
     }
@@ -33,7 +40,7 @@ class Prom {
     }, 0)
   }
   then(thenFn) {
-    if (this.isFinished && this.state === 'resolved') {
+    if (this.isFinished && this.state === 'fulfilled') {
       try {
         const res = thenFn(this.value);
         if (res instanceof Prom) {
@@ -43,9 +50,6 @@ class Prom {
           resolve(res);
         });
       } catch(e) {
-        if (this.rejecterFn) {
-          return this.rejecterFn(e);
-        }
         return new Prom((resolve, reject) => {
           reject(e);
         });
@@ -74,9 +78,40 @@ class Prom {
   }
   catch(catchFn) {
     if (this.isFinished && this.state === 'rejected') {
-      return catchFn(this.value);
+      try {
+        const res = catchFn(this.value);
+        if (res instanceof Prom) {
+          return res;
+        }
+        return new Prom((resolve, reject) => {
+          resolve(res);
+        });
+      } catch(e) {
+        return new Prom((resolve, reject) => {
+          reject(e);
+        });
+      }
     }
-    this.rejecterFn = catchFn;
+    return new Prom((resolve, reject) => {
+      if (!this.resolverFn) {
+        this.resolverFn = (value) => {
+          resolve(value);
+        }
+      }
+      this.rejecterFn = (error) => {
+        try {
+          const res = catchFn(error);
+          if (res instanceof Prom) {
+            return res
+              .then(val => resolve(val))
+              .catch(err => reject(err));
+          }
+          resolve(res);
+        } catch(e) {
+          reject(e);
+        }
+      }
+    });
   }
 }
 

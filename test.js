@@ -17,11 +17,15 @@ promTest()
   })
   .then(res => {
     return new Prom((resolve, reject) => {
+      throw 'sfd'
       setTimeout(() => {
-        throw 'sfd'
-        // resolve('tursfd');
+        resolve('tursfd');
       }, 3000);
     });
+  })
+  .catch(err => {
+    console.log('ERROR caught', err);
+    return 'more chese';
   })
   .then(res => {
     return new Prom((resolve, reject) => {
@@ -31,7 +35,7 @@ promTest()
   .then(res => {
     return new Prom((resolve, reject) => {
       setTimeout(() => {
-        reject('last');
+        resolve('last');
       }, 3000);
     });
   })
@@ -42,5 +46,5 @@ promTest()
     console.log('mo', res);
   })
   .catch(err => {
-    console.log('ERROR caught', err);
+    console.log('final error caught', err);
   });
