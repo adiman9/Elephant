@@ -84,6 +84,7 @@ class Prom {
         this.rejecterFn = (error) => {
           reject(error);
         }
+        this._checkImmediateSettlement('rejected', this.rejecterFn);
       }
       this.resolverFn = (value) => {
         try {
@@ -112,6 +113,7 @@ class Prom {
         this.resolverFn = (value) => {
           resolve(value);
         }
+        this._checkImmediateSettlement('fulfilled', this.resolverFn);
       }
       this.rejecterFn = (error) => {
         try {
