@@ -44,7 +44,16 @@ promTest()
   })
   .then(res => {
     console.log('mo', res);
+    return 'now';
   })
   .catch(err => {
     console.log('final error caught', err);
+  })
+  .finally((val) => {
+    console.log('finally block', val);
+    return 'hello';
+  })
+  .then(res => {
+    console.log('after finally', res);
   });
+

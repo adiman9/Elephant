@@ -13,6 +13,7 @@ class Prom {
     this.isFinished = false;
     this.resolverFn = null;
     this.rejecterFn = null;
+    this.finallyFn = null;
     try {
       fn(this._resolve.bind(this), this._reject.bind(this));
     } catch(e) {
@@ -27,6 +28,9 @@ class Prom {
     this.state = 'fulfilled';
     if (this.resolverFn) {
       this.resolverFn(val);
+    } 
+    if (this.finallyFn) {
+      this.finallyFn(val);
     }
   }
   _reject(val) {
@@ -36,7 +40,10 @@ class Prom {
     setTimeout(() => {
       if (this.rejecterFn) {
         this.rejecterFn(val);
-      } 
+      }
+      if (this.finallyFn) {
+        this.finallyFn(val);
+      }
     }, 0)
   }
   then(thenFn) {
@@ -107,6 +114,30 @@ class Prom {
               .catch(err => reject(err));
           }
           resolve(res);
+        } catch(e) {
+          reject(e);
+        }
+      }
+    });
+  }
+  finally(finallyFn) {
+    if (this.isFinished) {
+      try {
+        finallyFn();
+        return new Prom((resolve, reject) => {
+          resolve(this.value);
+        });
+      } catch(e) {
+        return new Prom((resolve, reject) => {
+          reject(e);
+        });
+      }
+    }
+    return new Prom((resolve, reject) => {
+      this.finallyFn = (value) => {
+        try {
+          finallyFn();
+          resolve(value);
         } catch(e) {
           reject(e);
         }
