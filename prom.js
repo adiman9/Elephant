@@ -21,6 +21,16 @@ class Prom {
       });
     }
   }
+  static reject(err) {
+    return new Prom((resolve, reject) => {
+      reject(err);
+    });
+  }
+  static resolve(val) {
+    return new Prom((resolve, reject) => {
+      resolve(val);
+    });
+  }
   _resolve(val) {
     this.isFinished = true;
     this.value = val;
