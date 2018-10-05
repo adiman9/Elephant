@@ -19,7 +19,7 @@ function quickReject() {
   });
 }
 
-const all = Prom.all([promTest(), otherProm(), quickReject()])
+const all = Prom.race([promTest(), otherProm(), quickReject()])
 
 all
   .then(res => {

@@ -42,11 +42,17 @@ class Prom {
             }
           })
           .catch(res => reject(res))
-      })
+      });
     });
   }
   static race(iter) {
-    // TODO implement Fri  5 Oct 21:08:01 2018
+    return new Prom((resolve, reject) => {
+      iter.forEach((item) => {
+        item
+          .then(res => resolve(res))
+          .catch(res => reject(res))
+      });
+    });
   }
   _resolve(val) {
     this.isFinished = true;
