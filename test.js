@@ -6,6 +6,26 @@ function promTest() {
     resolve('pass');
   });
 }
+function otherProm() {
+  return new Prom((resolve, reject) => {
+    setTimeout(() => {
+      resolve('late');
+    }, 3000);
+  });
+}
+function quickReject() {
+  return new Prom((resolve, reject) => {
+    resolve('rejected quickly');
+  });
+}
+
+const all = Prom.all([promTest(), otherProm(), quickReject()])
+
+all
+  .then(res => {
+    console.log('result', res);
+  })
+  .catch(err => console.log('catch', err));
 
 promTest()
   .then(res => {

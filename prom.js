@@ -1,7 +1,5 @@
 // TODO then should take 2 callbacks, one to fulfill and the other to reject
 //
-// TODO add resolve, reject, race and all static methods
-//
 // Refer to: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 
 class Prom {
@@ -28,6 +26,27 @@ class Prom {
     return new Prom((resolve, reject) => {
       resolve(val);
     });
+  }
+  static all(iter) {
+    const len = iter.length;
+    const resultArr = [];
+    let returnedCount = 0;
+    return new Prom((resolve, reject) => {
+      iter.forEach((item, i) => {
+        item
+          .then(res => {
+            returnedCount++;
+            resultArr[i] = res;
+            if (returnedCount === len) {
+              resolve(resultArr);
+            }
+          })
+          .catch(res => reject(res))
+      })
+    });
+  }
+  static race(iter) {
+    // TODO implement Fri  5 Oct 21:08:01 2018
   }
   _resolve(val) {
     this.isFinished = true;
