@@ -1,5 +1,3 @@
-// TODO then should take 2 callbacks, one to fulfill and the other to reject
-//
 // Refer to: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 
 class Prom {
@@ -92,16 +90,43 @@ class Prom {
     }
   }
   then(thenFn, catchFn) {
+    if (!thenFn) {
+      return new Prom((resolve, reject) => {
+        this.resolverFn = (val) => resolve(val);
+        this.rejecterFn = (err) => reject(err);
+      });
+    }
     const earlySettle = this._checkImmediateSettlement('fulfilled', thenFn);
 
     if (earlySettle) {
       return earlySettle;
     }
 
+    if (catchFn) {
+      const earlyReject = this._checkImmediateSettlement('rejected', catchFn);
+
+      if (earlyReject) {
+        return earlyReject;
+      }
+    }
+
     return new Prom((resolve, reject) => {
       if (!this.rejecterFn) {
         this.rejecterFn = (error) => {
-          reject(error);
+          if (catchFn) {
+            try {
+              const res = catchFn(error);
+              if (res instanceof Prom) {
+                return res
+                  .then(val => resolve(val))
+                  .catch(err => reject(err));
+              }
+              return resolve(res);
+            } catch(e) {
+              return reject(e);
+            }
+          }
+          return reject(error);
         }
         this._checkImmediateSettlement('rejected', this.rejecterFn);
       }

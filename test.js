@@ -15,7 +15,7 @@ function otherProm() {
 }
 function quickReject() {
   return new Prom((resolve, reject) => {
-    resolve('rejected quickly');
+    reject('rejected quickly');
   });
 }
 
@@ -24,8 +24,14 @@ const all = Prom.race([promTest(), otherProm(), quickReject()])
 all
   .then(res => {
     console.log('result', res);
+  }, err => {
+    console.log('inline catch', err);
+    return 'hello brah'
   })
-  .catch(err => console.log('catch', err));
+  .catch(err => console.log('catch', err))
+  .then(res => {
+    console.log('mving final', res);
+  })
 
 promTest()
   .then(res => {
