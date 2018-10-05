@@ -2,7 +2,6 @@
 
 class Prom {
   constructor(fn) {
-    this.fn = fn;
     this.value = null;
     this.state = 'pending';
     this.isFinished = false;
