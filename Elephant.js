@@ -1,6 +1,6 @@
 // Refer to: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 
-class Prom {
+class Elephant {
   constructor(fn) {
     this.value = null;
     this.state = 'pending';
@@ -11,16 +11,16 @@ class Prom {
     try {
       fn(this._resolve.bind(this), this._reject.bind(this));
     } catch(e) {
-      return Prom.reject(e);
+      return Elephant.reject(e);
     }
   }
   static reject(err) {
-    return new Prom((resolve, reject) => {
+    return new Elephant((resolve, reject) => {
       reject(err);
     });
   }
   static resolve(val) {
-    return new Prom((resolve, reject) => {
+    return new Elephant((resolve, reject) => {
       resolve(val);
     });
   }
@@ -28,7 +28,7 @@ class Prom {
     const len = iter.length;
     const resultArr = [];
     let returnedCount = 0;
-    return new Prom((resolve, reject) => {
+    return new Elephant((resolve, reject) => {
       iter.forEach((item, i) => {
         item
           .then(res => {
@@ -43,7 +43,7 @@ class Prom {
     });
   }
   static race(iter) {
-    return new Prom((resolve, reject) => {
+    return new Elephant((resolve, reject) => {
       iter.forEach((item) => {
         item
           .then(res => resolve(res))
@@ -79,18 +79,18 @@ class Prom {
     if (this.isFinished && this.state === state) {
       try {
         const res = handlerFn(this.value);
-        if (res instanceof Prom) {
+        if (res instanceof Elephant) {
           return res;
         }
-        return Prom.resolve(res);
+        return Elephant.resolve(res);
       } catch(e) {
-        return Prom.reject(e);
+        return Elephant.reject(e);
       }
     }
   }
   then(thenFn, catchFn) {
     if (!thenFn) {
-      return new Prom((resolve, reject) => {
+      return new Elephant((resolve, reject) => {
         this.resolverFn = (val) => resolve(val);
         this.rejecterFn = (err) => reject(err);
       });
@@ -109,13 +109,13 @@ class Prom {
       }
     }
 
-    return new Prom((resolve, reject) => {
+    return new Elephant((resolve, reject) => {
       if (!this.rejecterFn) {
         this.rejecterFn = (error) => {
           if (catchFn) {
             try {
               const res = catchFn(error);
-              if (res instanceof Prom) {
+              if (res instanceof Elephant) {
                 return res
                   .then(val => resolve(val))
                   .catch(err => reject(err));
@@ -132,7 +132,7 @@ class Prom {
       this.resolverFn = (value) => {
         try {
           const res = thenFn(value);
-          if (res instanceof Prom) {
+          if (res instanceof Elephant) {
             return res
               .then(val => resolve(val))
               .catch(err => reject(err));
@@ -151,7 +151,7 @@ class Prom {
       return earlySettle;
     }
 
-    return new Prom((resolve, reject) => {
+    return new Elephant((resolve, reject) => {
       if (!this.resolverFn) {
         this.resolverFn = (value) => {
           resolve(value);
@@ -161,7 +161,7 @@ class Prom {
       this.rejecterFn = (error) => {
         try {
           const res = catchFn(error);
-          if (res instanceof Prom) {
+          if (res instanceof Elephant) {
             return res
               .then(val => resolve(val))
               .catch(err => reject(err));
@@ -177,12 +177,12 @@ class Prom {
     if (this.isFinished) {
       try {
         finallyFn();
-        return Prom.resolve(this.value);
+        return Elephant.resolve(this.value);
       } catch(e) {
-        return Prom.reject(e);
+        return Elephant.reject(e);
       }
     }
-    return new Prom((resolve, reject) => {
+    return new Elephant((resolve, reject) => {
       this.finallyFn = (value) => {
         try {
           finallyFn();
@@ -195,4 +195,4 @@ class Prom {
   }
 }
 
-module.exports = Prom;
+module.exports = Elephant;
