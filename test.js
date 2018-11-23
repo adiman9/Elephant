@@ -1,5 +1,5 @@
-const Prom = require('./prom');
-// const Prom = Promise;
+let Prom = require('./Elephant');
+// let Prom = Promise;
 
 function promTest() {
   return new Prom((resolve, reject) => {
